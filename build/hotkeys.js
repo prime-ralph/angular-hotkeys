@@ -57,7 +57,9 @@
      * Cheat sheet template in the event you want to totally customize it.
      * @type {String}
      */
-    this.template = '<div class="cfp-hotkeys-container fade" ng-class="{in: helpVisible}" style="display: none;"><div class="cfp-hotkeys">' +
+    this.template = '<div class="cfp-hotkeys-container fade" ng-class="{in: helpVisible}" style="display: none;">' +
+                    '<div class="cfp-hotkeys-wrapper">' +
+                    '<div class="cfp-hotkeys">' +
                       '<h4 class="cfp-hotkeys-title" ng-if="!header">{{ title }}</h4>' +
                       '<div ng-bind-html="header" ng-if="header"></div>' +
                       '<div class="cfp-hotkeys-category-container">' +
@@ -75,7 +77,9 @@
                       '</div>' +
                       '<div ng-bind-html="footer" ng-if="footer"></div>' +
                       '<div class="cfp-hotkeys-close" ng-click="toggleCheatSheet()">&#215;</div>' +
-                    '</div></div>';
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
 
     /**
      * Configurable setting for the cheat sheet hotkey

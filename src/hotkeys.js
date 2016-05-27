@@ -56,7 +56,10 @@
                       '<table><tbody>' +
                         '<tr ng-repeat="hotkey in hotkeys | filter:{ description: \'!$$undefined$$\' }">' +
                           '<td class="cfp-hotkeys-keys">' +
-                            '<span ng-repeat="key in hotkey.format() track by $index" class="cfp-hotkeys-key">{{ key }}</span>' +
+                              '<span ng-repeat="key in hotkey.format() track by $index" >'+
+                                  '<span class="cfp-hotkeys-key" ng-repeat="skey in key track by $index">{{ skey }}</span>'+
+                                  '<span ng-if="!$last">,&nbsp;</span>'+
+                              '</span>'+
                           '</td>' +
                           '<td class="cfp-hotkeys-text">{{ hotkey.description }}</td>' +
                         '</tr>' +
@@ -173,15 +176,15 @@
       Hotkey.prototype.format = function() {
         if (this._formated === null) {
           var _this=this;
+          _this._formated=[]
           this.combo.forEach(function(combo){
             var sequence = combo.split(/[\s]/);
             for (var i = 0; i < sequence.length; i++) {
               sequence[i] = symbolize(sequence[i]);
             }
-            _this._formated = sequence;
+            _this._formated.push(sequence);
           });
         }
-
         return this._formated;
       };
 

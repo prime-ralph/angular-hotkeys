@@ -166,15 +166,14 @@
        */
       Hotkey.prototype.format = function() {
         if (this._formated === null) {
-          // Don't show all the possible key combos, just the first one.  Not sure
-          // of usecase here, so open a ticket if my assumptions are wrong
-          var combo = this.combo[0];
-
-          var sequence = combo.split(/[\s]/);
-          for (var i = 0; i < sequence.length; i++) {
-            sequence[i] = symbolize(sequence[i]);
-          }
-          this._formated = sequence;
+          var _this=this;
+          this.combo.forEach(function(combo){
+            var sequence = combo.split(/[\s]/);
+            for (var i = 0; i < sequence.length; i++) {
+              sequence[i] = symbolize(sequence[i]);
+            }
+            _this._formated = sequence;
+          });
         }
 
         return this._formated;

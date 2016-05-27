@@ -268,7 +268,9 @@
         });
       }
       if (this.useUIRoute) {
-        var _routeChanged=function (event) {
+        $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
+          // hotkeys for ui-router are held within toState, so make a new object that includes the scope, and the hotkeys
+          event.hotkeys = toState.hotkeys;
           purgeHotkeys();
 
           if (event.hotkeys) {
@@ -288,19 +290,10 @@
 
               // todo: perform check to make sure not already defined:
               // this came from a route, so it's likely not meant to be persistent:
-              hotkey[4] = false;
+              hotkey[5] = false;
               _add.apply(this, hotkey);
             });
           }
-        };
-        $rootScope.$on('$routeChangeSuccess', function (event, route) {
-          _routeChanged(route);
-        });
-
-        $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
-          // hotkeys for ui-router are held within toState, so make a new object that includes the scope, and the hotkeys
-          event.hotkeys = toState.hotkeys;
-          _routeChanged(event);
         });
       }
 

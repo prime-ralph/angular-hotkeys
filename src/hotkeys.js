@@ -265,31 +265,38 @@
         });
       }
       if (this.useUIRoute) {
+        var _this=this;
         $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
           // hotkeys for ui-router are held within toState, so make a new object that includes the scope, and the hotkeys
-          event.hotkeys = toState.hotkeys;
-          purgeHotkeys();
-
+          event.hotkeys = [];
+          var parent_state=toState.$parent || toState.parent || null;
+          while(parent_state && typeof(parent_state)==="object" ){
+            if(parent_state.hotkeys)event.hotkeys.splice.apply(event.hotkeys,[0,0].concat(parent_state.hotkeys));
+            parent_state=parent_state.$parent || parent_state.parent || null;
+          }
+          if(toState.hotkeys)event.hotkeys.splice.apply(event.hotkeys,[0,0].concat(toState.hotkeys));
+          console.log("event.hotkeys",event, toState, toParams, fromState, fromParams);
+          //purgeHotkeys();
           if (event.hotkeys) {
-            angular.forEach(event.hotkeys, function (hotkey) {
+            var cl_off=$rootScope.$on("$viewContentLoaded",function(v_event, viewConfig){
+                angular.forEach(event.hotkeys, function (hotkey) {
+                  hotkey=JSON.parse(JSON.stringify(hotkey));
+                  var callback = hotkey[2],
+                    scope = v_event.targetScope || v_event.scope;
+                  // a string was given, which implies this is a function that is to be
+                  // $eval()'d within that controller's scope, so pass along the scope as well
+                  if (typeof (callback) === 'string' || callback instanceof String) {
+                    hotkey[2] = [callback, scope];
+                  }
 
-              var callback = hotkey[2],
-                scope = null;
-
-              // a string was given, which implies this is a function that is to be
-              // $eval()'d within that controller's scope, so pass along the scope as well              
-              if (typeof (callback) === 'string' || callback instanceof String) {
-                // ui-router uses targetScope, ng-router uses just scope:
-                scope = event.targetScope || event.scope;
-                // console.log(scope);
-                hotkey[2] = [callback, scope];
-              }
-
-              // todo: perform check to make sure not already defined:
-              // this came from a route, so it's likely not meant to be persistent:
-              hotkey[5] = false;
-              _add.apply(this, hotkey);
+                  // todo: perform check to make sure not already defined:
+                  // this came from a route, so it's likely not meant to be persistent:
+                  hotkey[5] = false;
+                  bindTo(scope).add.apply(_this, hotkey);
+                });
+                cl_off();
             });
+
           }
         });
       }

@@ -182,7 +182,7 @@
       Hotkey.prototype.format = function() {
         if (this._formated === null) {
           var _this=this;
-          _this._formated=[]
+          _this._formated=[];
           this.combo.forEach(function(combo){
             var sequence = combo.split(/[\s]/);
             for (var i = 0; i < sequence.length; i++) {
@@ -276,31 +276,44 @@
           // hotkeys for ui-router are held within toState, so make a new object that includes the scope, and the hotkeys
           event.hotkeys = [];
           var parent_state=toState.$parent || toState.parent || null;
+          var views=toState.views && Object.keys(toState.$$state().views) || ["@"];
           while(parent_state && typeof(parent_state)==="object" ){
             if(parent_state.hotkeys)event.hotkeys.splice.apply(event.hotkeys,[0,0].concat(parent_state.hotkeys));
+            if(parent_state.views)views=views.concat(Object.keys(parent_state.$$state().views));
             parent_state=parent_state.$parent || parent_state.parent || null;
           }
           if(toState.hotkeys)event.hotkeys.splice.apply(event.hotkeys,[0,0].concat(toState.hotkeys));
-          console.log("event.hotkeys",event, toState, toParams, fromState, fromParams);
           //purgeHotkeys();
+          var scopes=[];
           if (event.hotkeys) {
-            var cl_off=$rootScope.$on("$viewContentLoaded",function(v_event, viewConfig){
-                angular.forEach(event.hotkeys, function (hotkey) {
-                  hotkey=JSON.parse(JSON.stringify(hotkey));
-                  var callback = hotkey[2],
-                    scope = v_event.targetScope || v_event.scope;
-                  // a string was given, which implies this is a function that is to be
-                  // $eval()'d within that controller's scope, so pass along the scope as well
+            var hotkeys=event.hotkeys;
+            var bind_hotkeys=function(){
+              angular.forEach(hotkeys, function (hotkey) {
+                  var callback = hotkey[2];
                   if (typeof (callback) === 'string' || callback instanceof String) {
-                    hotkey[2] = [callback, scope];
-                  }
+                    var farg=callback.split(".")[0].trim();
+                    scopes.forEach(function(scope){
+                       if (scope[farg]){
+                         var _hotkey=JSON.parse(JSON.stringify(hotkey));
+                         _hotkey[2] = [callback, scope];
+                         _hotkey[5] = false;
+                         bindTo(scope).add.apply(_this, _hotkey);
+                       }
 
-                  // todo: perform check to make sure not already defined:
-                  // this came from a route, so it's likely not meant to be persistent:
-                  hotkey[5] = false;
-                  bindTo(scope).add.apply(_this, hotkey);
-                });
-                cl_off();
+                    });
+                  }
+              });
+            };
+            var cl_off=$rootScope.$on("$viewContentLoaded",function(v_event, viewName){
+                var ind=views.indexOf(viewName);
+                if (ind>=0){
+                  scopes.push(v_event.targetScope || v_event.scope);
+                  views.splice(ind,1);
+                  if(views.length===0){
+                    bind_hotkeys();
+                    cl_off();
+                  }
+                }
             });
 
           }

@@ -23,7 +23,7 @@
   "scripts": {
     "test": "node_modules/karma/bin/karma start test/karma.conf.js"
   },
-  "main": "build/hotkeys.js"
+  "main": "build/hotkeys.js",
   "dependencies": {
     "angular": "^1.0.8"
   },

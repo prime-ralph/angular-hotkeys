@@ -28,7 +28,7 @@
     "main": "build/hotkeys.js",
     "dependencies": {
       "angular": "github:angular/bower-angular@1.5.8"
-    },
+    }
   },
   "devDependencies": {
     "grunt": "~0.4.1",

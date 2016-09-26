@@ -23,9 +23,12 @@
   "scripts": {
     "test": "node_modules/karma/bin/karma start test/karma.conf.js"
   },
-  "main": "build/hotkeys.js",
-  "dependencies": {
-    "angular": "^1.0.8"
+  "jspm": {
+    "name": "angular-hotkeys",
+    "main": "build/hotkeys.js",
+    "dependencies": {
+      "angular": "github:angular/bower-angular@1.5.8"
+    },
   },
   "devDependencies": {
     "grunt": "~0.4.1",

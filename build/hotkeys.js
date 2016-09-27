@@ -1,3 +1,6 @@
+/**/
+'format global';
+'deps angular';
 /*! 
  * angular-hotkeys v1.7.0
  * https://chieffancypants.github.io/angular-hotkeys
@@ -16,8 +19,6 @@
 (function() {
 
   'use strict';
-  'format global';
-  'deps angular';
 
   angular.module('cfp.hotkeys', []).provider('hotkeys', ['$injector', function($injector) {
 

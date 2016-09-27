@@ -16,6 +16,8 @@
 (function() {
 
   'use strict';
+  'format global';
+  'deps angular';
 
   angular.module('cfp.hotkeys', []).provider('hotkeys', ['$injector', function($injector) {
 

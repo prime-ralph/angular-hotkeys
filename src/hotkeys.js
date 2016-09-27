@@ -1,3 +1,6 @@
+/**/
+'format global';
+'deps angular'; 
 /*
  * angular-hotkeys
  *
@@ -10,8 +13,6 @@
 (function() {
 
   'use strict';
-  'format global';
-  'deps angular';
 
   angular.module('cfp.hotkeys', []).provider('hotkeys', function($injector) {
 

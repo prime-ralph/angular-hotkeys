@@ -1,12 +1,12 @@
-/**/
-'format global';
-'deps angular';
 /*! 
- * angular-hotkeys v1.7.0
+ * angular-hotkeys v1.7.1
  * https://chieffancypants.github.io/angular-hotkeys
  * Copyright (c) 2016 Wes Cruver
  * License: MIT
  */
+/**/
+'format global';
+'deps angular'; 
 /*
  * angular-hotkeys
  *

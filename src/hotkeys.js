@@ -1,3 +1,6 @@
+/**/
+'format global';
+'deps angular'; 
 /*
  * angular-hotkeys
  *
@@ -26,6 +29,12 @@
     this.useNgRoute = $injector.has('ngViewDirective');
 
     /**
+     * Configurable setting to disable uiRoute hooks
+     * @type {Boolean}
+     */
+    this.useUIRoute = $injector.has('uiViewDirective');
+
+    /**
      * Configurable setting for the cheat sheet title
      * @type {String}
      */
@@ -50,7 +59,10 @@
                       '<table><tbody>' +
                         '<tr ng-repeat="hotkey in hotkeys | filter:{ description: \'!$$undefined$$\' }">' +
                           '<td class="cfp-hotkeys-keys">' +
-                            '<span ng-repeat="key in hotkey.format() track by $index" class="cfp-hotkeys-key">{{ key }}</span>' +
+                              '<span ng-repeat="key in hotkey.format() track by $index" >'+
+                                  '<span class="cfp-hotkeys-key" ng-repeat="skey in key track by $index">{{ skey }}</span>'+
+                                  '<span ng-if="!$last">,&nbsp;</span>'+
+                              '</span>'+
                           '</td>' +
                           '<td class="cfp-hotkeys-text">{{ hotkey.description }}</td>' +
                         '</tr>' +
@@ -166,17 +178,16 @@
        */
       Hotkey.prototype.format = function() {
         if (this._formated === null) {
-          // Don't show all the possible key combos, just the first one.  Not sure
-          // of usecase here, so open a ticket if my assumptions are wrong
-          var combo = this.combo[0];
-
-          var sequence = combo.split(/[\s]/);
-          for (var i = 0; i < sequence.length; i++) {
-            sequence[i] = symbolize(sequence[i]);
-          }
-          this._formated = sequence;
+          var _this=this;
+          _this._formated=[];
+          this.combo.forEach(function(combo){
+            var sequence = combo.split(/[\s]/);
+            for (var i = 0; i < sequence.length; i++) {
+              sequence[i] = symbolize(sequence[i]);
+            }
+            _this._formated.push(sequence);
+          });
         }
-
         return this._formated;
       };
 
@@ -210,6 +221,7 @@
        */
       scope.header = this.templateHeader;
 
+      
       /**
        * Holds the footer HTML for the help menu
        * @type {String}
@@ -255,8 +267,55 @@
           }
         });
       }
+      if (this.useUIRoute) {
+        var _this=this;
+        $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
+          // hotkeys for ui-router are held within toState, so make a new object that includes the scope, and the hotkeys
+          event.hotkeys = [];
+          var parent_state=toState.$parent || toState.parent || null;
+          var views=toState.views && Object.keys(toState.$$state().views) || ["@"];
+          while(parent_state && typeof(parent_state)==="object" ){
+            if(parent_state.hotkeys)event.hotkeys.splice.apply(event.hotkeys,[0,0].concat(parent_state.hotkeys));
+            if(parent_state.views)views=views.concat(Object.keys(parent_state.$$state().views));
+            parent_state=parent_state.$parent || parent_state.parent || null;
+          }
+          if(toState.hotkeys)event.hotkeys.splice.apply(event.hotkeys,[0,0].concat(toState.hotkeys));
+          //purgeHotkeys();
+          var scopes=[];
+          if (event.hotkeys) {
+            var hotkeys=event.hotkeys;
+            var bind_hotkeys=function(){
+              angular.forEach(hotkeys, function (hotkey) {
+                  var callback = hotkey[2];
+                  if (typeof (callback) === 'string' || callback instanceof String) {
+                    var farg=callback.split(".")[0].trim();
+                    scopes.forEach(function(scope){
+                       if (scope[farg]){
+                         var _hotkey=JSON.parse(JSON.stringify(hotkey));
+                         _hotkey[2] = [callback, scope];
+                         _hotkey[5] = false;
+                         bindTo(scope).add.apply(_this, _hotkey);
+                       }
 
+                    });
+                  }
+              });
+            };
+            var cl_off=$rootScope.$on("$viewContentLoaded",function(v_event, viewName){
+                var ind=views.indexOf(viewName);
+                if (ind>=0){
+                  scopes.push(v_event.targetScope || v_event.scope);
+                  views.splice(ind,1);
+                  if(views.length===0){
+                    bind_hotkeys();
+                    cl_off();
+                  }
+                }
+            });
 
+          }
+        });
+      }
 
       // Auto-create a help menu:
       if (this.includeCheatSheet) {
@@ -556,9 +615,10 @@
           // now that the scope is available:
           if (callback instanceof Array) {
             var funcString = callback[0];
-            var route = callback[1];
+            var scope = callback[1];
+
             callback = function (event) {
-              route.scope.$eval(funcString);
+              scope.$eval(funcString);
             };
           }
 
@@ -582,6 +642,7 @@
         cheatSheetHotkey      : this.cheatSheetHotkey,
         cheatSheetDescription : this.cheatSheetDescription,
         useNgRoute            : this.useNgRoute,
+        useUIRoute            : this.useUIRoute,
         purgeHotkeys          : purgeHotkeys,
         templateTitle         : this.templateTitle,
         pause                 : pause,
